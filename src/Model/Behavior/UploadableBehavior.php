@@ -89,6 +89,15 @@ class UploadableBehavior extends Behavior
             $entity->setErrors($errors);
             return FALSE;
         }
+        
+        foreach ($this->getConfig(NULL, []) as $field => $settings) {
+            $uploadData = $entity->get($field);
+            if (null === $uploadData) {
+                continue;
+            }
+            
+            $path = $this->getPath($field, $settings);
+        }
     }
     
     /**
