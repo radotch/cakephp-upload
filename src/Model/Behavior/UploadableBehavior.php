@@ -4,7 +4,10 @@ namespace CakeUpload\Model\Behavior;
 use Cake\ORM\Behavior;
 use Cake\ORM\Table;
 use Cake\Database\Type;
+use Cake\Event\Event;
+use Cake\Utility\Hash;
 use CakeUpload\Database\Type\UploadedFileType;
+use ArrayObject;
 
 /**
  * Uploadable behavior
@@ -49,5 +52,23 @@ class UploadableBehavior extends Behavior
         }
         
         $this->_table->setSchema($schema);
+    }
+    
+    /**
+     * Modifies data being marshaled to ensure empty upload data is not inserted.
+     * 
+     * @param Event $event
+     * @param ArrayObject $data
+     * @param ArrayObject $options
+     */
+    public function beforeMarshal(Event $event, ArrayObject $data, ArrayObject $options)
+    {
+        $dataCopy = $data->getArrayCopy();
+        foreach (array_keys($this->getConfig(NULL, [])) as $field) {
+            $path = $field . '.error';
+            if ((Hash::get($dataCopy, $path) !== NULL) && (Hash::get($dataCopy, $path) === UPLOAD_ERR_NO_FILE)) {
+                unset($data[$field]);
+            }
+        }
     }
 }
