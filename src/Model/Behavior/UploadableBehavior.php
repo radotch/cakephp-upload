@@ -9,6 +9,7 @@ use Cake\Event\Event;
 use Cake\Utility\Hash;
 use CakeUpload\Database\Type\UploadedFileType;
 use CakeUpload\Data\Error\UploadChecker;
+use CakeUpload\Data\Path\PathManager;
 use ArrayObject;
 
 /**
@@ -88,5 +89,46 @@ class UploadableBehavior extends Behavior
             $entity->setErrors($errors);
             return FALSE;
         }
+    }
+    
+    /**
+     * Mixin method
+     * 
+     * Get path for field. If path is not configured, default is returned.
+     * 
+     * Note that if settings are passed empty, the method will get them from
+     * configuration. It is for convenience when get path from place outside
+     * as Table or Controller.
+     * 
+     * @param string $field Field name
+     * @param array $settings Field settings
+     * @return string Path relative to CakePHP webroot directory
+     */
+    public function getPath(string $field, array $settings = []) : string
+    {
+        if (empty($settings)) {
+            $settings = $this->getConfig($field);
+        }
+        
+        $pathManager = new PathManager($this->_table, $field, $settings);
+        
+        return $pathManager->getPath();
+    }
+    
+    /**
+     * Mixin method
+     * 
+     * Allow to set path for field on the fly.
+     * 
+     * Make easy to set/change path where to move uploaded files on the fly.
+     * It is convenient when must change data for example from related model or 
+     * controller
+     * 
+     * @param string $field Field name in configuration
+     * @param string $path Path relative to CakePHP webroot directory
+     */
+    public function setPath(string $field, string $path)
+    {
+        $this->setConfig($field . '.path', $path);
     }
 }
