@@ -3,10 +3,12 @@ namespace CakeUpload\Model\Behavior;
 
 use Cake\ORM\Behavior;
 use Cake\ORM\Table;
+use Cake\ORM\Entity;
 use Cake\Database\Type;
 use Cake\Event\Event;
 use Cake\Utility\Hash;
 use CakeUpload\Database\Type\UploadedFileType;
+use CakeUpload\Data\Error\UploadChecker;
 use ArrayObject;
 
 /**
@@ -69,6 +71,22 @@ class UploadableBehavior extends Behavior
             if ((Hash::get($dataCopy, $path) !== NULL) && (Hash::get($dataCopy, $path) === UPLOAD_ERR_NO_FILE)) {
                 unset($data[$field]);
             }
+        }
+    }
+    
+    /**
+     * 
+     * @param Event $event
+     * @param Entity $entity
+     * @param ArrayObject $options
+     */
+    public function beforeSave(Event $event, Entity $entity, ArrayObject $options)
+    {
+        $uploadChecker = new UploadChecker($entity, array_keys($this->getConfig(NULL, [])));
+        if ($uploadChecker->hasErrors()) {
+            $errors = $uploadChecker->getErrors();
+            $entity->setErrors($errors);
+            return FALSE;
         }
     }
 }
