@@ -1,0 +1,20 @@
+{
+    "name": "radotch/cakephp-upload",
+    "description": "Upload plugin for CakePHP",
+    "type": "cakephp-plugin",
+    "license": "MIT",
+    "require": {
+        "cakephp/cakephp": "^3.7"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "CakeUpload\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CakeUpload\\Test\\": "tests/"
+        }
+    }
+}
