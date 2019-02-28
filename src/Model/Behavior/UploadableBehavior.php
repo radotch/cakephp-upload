@@ -1,6 +1,7 @@
 <?php
 namespace CakeUpload\Model\Behavior;
 
+use CakeUpload\Data\DataManager\DataManagerInterface;
 use Cake\ORM\Behavior;
 use Cake\ORM\Table;
 use Cake\ORM\Entity;
@@ -10,7 +11,9 @@ use Cake\Utility\Hash;
 use CakeUpload\Database\Type\UploadedFileType;
 use CakeUpload\Data\Error\UploadChecker;
 use CakeUpload\Data\Path\PathManager;
+use CakeUpload\Data\DataManager\DataManager;
 use ArrayObject;
+use Exception;
 
 /**
  * Uploadable behavior
@@ -97,6 +100,9 @@ class UploadableBehavior extends Behavior
             }
             
             $path = $this->getPath($field, $settings);
+            
+            $dataManager = $this->_getDataManager($entity, $uploadData, $path, $field, $settings);
+            $files = $dataManager->build();
         }
     }
     
@@ -139,5 +145,25 @@ class UploadableBehavior extends Behavior
     public function setPath(string $field, string $path)
     {
         $this->setConfig($field . '.path', $path);
+    }
+    
+    /**
+     * Return Data Manager instance.
+     * 
+     * @param Entity $entity Entity instance
+     * @param array $data Field's upload data
+     * @param string $path Field's configured path
+     * @param string $field Field name
+     * @param array $settings Field settings
+     * @return DataManagerInterface Data Manager Interface implemented object
+     */
+    protected function _getDataManager(Entity $entity, array $data, string $path, string $field, array $settings) : DataManagerInterface
+    {
+        $dataManager = new DataManager($this->_table, $entity, $data, $path, $field, $settings);
+        if (! $dataManager instanceof DataManagerInterface) {
+            throw new Exception('Data Manager class must implements DataManagerInterface');
+        }
+        
+        return $dataManager;
     }
 }
