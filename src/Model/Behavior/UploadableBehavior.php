@@ -112,6 +112,32 @@ class UploadableBehavior extends Behavior
     }
     
     /**
+     * Remove related files after Entity has been deleted.
+     * 
+     * @param Event $event
+     * @param Entity $entity
+     * @param ArrayObject $options
+     */
+    public function afterDelete(Event $event, Entity $entity, ArrayObject $options)
+    {
+        foreach ($this->getConfig(NULL, []) as $field => $settings) {
+            $data = $entity->get($field);
+            if (null === $data) {
+                continue;
+            }
+            
+            $path = $this->getPath($field, $settings);
+            $storage = $this->_getStorage($entity, $path, $field, $settings);
+            if (is_string($data)) {
+                $tmpData[] = $data;
+                $data = $tmpData;
+            }
+            
+            $storage->delete($data);
+        }
+    }
+    
+    /**
      * Mixin method
      * 
      * Get path for field. If path is not configured, default is returned.
