@@ -2,22 +2,22 @@
 namespace CakeUpload\Test\TestCase\Data\Path;
 
 use Cake\ORM\Table;
-use CakeUpload\File\Path\DefaultPathManager;
+use CakeUpload\Data\Path\PathManager;
 use Cake\TestSuite\TestCase;
 
 /**
- * Description of DefaultPathManagerTest
+ * Description of PathManagerTest
  *
  * @author Radoslav Cholakov <rdch@mail.bg>
  */
 class PathManagerTest extends TestCase
 {
     /**
-     * DefaultPathManager instance
+     * PathManager instance
      * 
-     * @var DefaultPathManager 
+     * @var PathManager 
      */
-    protected $DefaultPathManager;
+    protected $PathManager;
     
     /**
      * Table instance
@@ -53,7 +53,7 @@ class PathManagerTest extends TestCase
         $this->_field = 'testField';
         $this->_settings = ['path' => 'path/where/to/move'];
         
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, $this->_settings);
+        $this->PathManager = new PathManager($this->_table, $this->_field, $this->_settings);
     }
     
     /**
@@ -63,7 +63,7 @@ class PathManagerTest extends TestCase
      */
     public function tearDown(): void
     {
-        unset($this->DefaultPathManager);
+        unset($this->PathManager);
         
         parent::tearDown();
     }
@@ -73,7 +73,7 @@ class PathManagerTest extends TestCase
      */
     public function testGetPath()
     {
-        $path = $this->DefaultPathManager->getPath();
+        $path = $this->PathManager->getPath();
         
         $this->assertTrue(is_string($path), __d('upload-plugin', 'Method must return string, but got {0}', gettype($path)));
         $this->assertEquals($this->_settings['path'], $path);
@@ -84,10 +84,10 @@ class PathManagerTest extends TestCase
      */
     public function testGetPathMethodReturnDefaultPathWhenPathIsNotConfigured()
     {
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, []);
+        $this->PathManager = new PathManager($this->_table, $this->_field, []);
         
-        $expected = $this->DefaultPathManager->getDefaultPath();
-        $path = $this->DefaultPathManager->getPath();
+        $expected = $this->PathManager->getDefaultPath();
+        $path = $this->PathManager->getPath();
         
         $this->assertEquals($expected, $path, __d('upload-plugin', 'Failed to return default path when path is not in field configuration.'));
     }
@@ -100,10 +100,10 @@ class PathManagerTest extends TestCase
      */
     public function testGetPathMethodReturnDefaultPathWhenPathIsNull()
     {
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, ['path' => NULL]);
+        $this->PathManager = new PathManager($this->_table, $this->_field, ['path' => NULL]);
         
-        $expected = $this->DefaultPathManager->getDefaultPath();
-        $path = $this->DefaultPathManager->getPath();
+        $expected = $this->PathManager->getDefaultPath();
+        $path = $this->PathManager->getPath();
         
         $this->assertEquals($expected, $path, __d('upload-plugin', 'Failed to return default path when path is NULL.'));
     }
@@ -116,10 +116,10 @@ class PathManagerTest extends TestCase
      */
     public function testGetPathMethodReturnDefaultPathWhenPathIsEmpty()
     {
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, ['path' => '']);
+        $this->PathManager = new PathManager($this->_table, $this->_field, ['path' => '']);
         
-        $expected = $this->DefaultPathManager->getDefaultPath();
-        $path = $this->DefaultPathManager->getPath();
+        $expected = $this->PathManager->getDefaultPath();
+        $path = $this->PathManager->getPath();
         
         $this->assertEquals($expected, $path, __d('upload-plugin', 'Failed to return default path when path is empty.'));
     }
@@ -132,14 +132,14 @@ class PathManagerTest extends TestCase
      */
     public function testGetPathMethodReturnValueWithoutStartingOrTrailingDirectorySeparator()
     {
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, ['path' => '/path/to/move/']);
-        $path = $this->DefaultPathManager->getPath();
+        $this->PathManager = new PathManager($this->_table, $this->_field, ['path' => '/path/to/move/']);
+        $path = $this->PathManager->getPath();
         
         $this->assertStringStartsNotWith('/', $path, __d('upload-plugin', 'Default path MUST NOT starts with slash'));
         $this->assertStringEndsNotWith('/', $path, __d('upload-plugin', 'Default path MUST NOT ends with slash'));
         
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, ['path' => '\\path/to/move\\']);
-        $path = $this->DefaultPathManager->getPath();
+        $this->PathManager = new PathManager($this->_table, $this->_field, ['path' => '\\path/to/move\\']);
+        $path = $this->PathManager->getPath();
         
         $this->assertStringStartsNotWith('\\', $path, __d('upload-plugin', 'Default path MUST NOT starts with backslash'));
         $this->assertStringEndsNotWith('\\', $path, __d('upload-plugin', 'Default path MUST NOT ends with backslash'));
@@ -150,7 +150,7 @@ class PathManagerTest extends TestCase
      */
     public function testGetDefaultPath()
     {
-        $defaultPath = $this->DefaultPathManager->getDefaultPath();
+        $defaultPath = $this->PathManager->getDefaultPath();
         
         $this->assertTrue(is_string($defaultPath), __d('upload-plugin', 'Must return string but got {0}', gettype($defaultPath)));
     }
@@ -160,7 +160,7 @@ class PathManagerTest extends TestCase
      */
     public function testGetDefaultPathMethodReturnsValueDefinition()
     {
-        $defaultPath = $this->DefaultPathManager->getDefaultPath();
+        $defaultPath = $this->PathManager->getDefaultPath();
         $expected = 'files' . DS . $this->_table->getAlias() . DS . $this->_field;
         
         $this->assertEquals($expected, $defaultPath, __d('upload-plugin', 'Default path definition must be "files/{$model}/{$field}"'));
@@ -172,8 +172,8 @@ class PathManagerTest extends TestCase
      */
     public function testGetDefaultPathMethodReturnsValueWitoutStartingOrTrailingDirectorySeparator()
     {
-        $this->DefaultPathManager = new DefaultPathManager($this->_table, $this->_field, []);
-        $defaultPath = $this->DefaultPathManager->getDefaultPath();
+        $this->PathManager = new PathManager($this->_table, $this->_field, []);
+        $defaultPath = $this->PathManager->getDefaultPath();
         
         $this->assertStringStartsNotWith('/', $defaultPath, __d('upload-plugin', 'Default path MUST NOT starts with slash'));
         $this->assertStringEndsNotWith('/', $defaultPath, __d('upload-plugin', 'Default path MUST NOT ends with slash'));
