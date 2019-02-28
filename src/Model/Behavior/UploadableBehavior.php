@@ -112,6 +112,39 @@ class UploadableBehavior extends Behavior
     }
     
     /**
+     * Check if any of configured fields are changed. If TRUE remove old file.
+     * Note that when upload file with same name as current, old file will be
+     * just replaced.
+     * 
+     * @param Event $event
+     * @param Entity $entity
+     * @param ArrayObject $options
+     */
+    public function afterSave(Event $event, Entity $entity, ArrayObject $options)
+    {
+        $fields = $this->getConfig(NULL, []);
+        $changed = $entity->extractOriginalChanged(array_keys($fields));
+        foreach ($fields as $field => $settings) {
+            if (! array_key_exists($field, $changed)) {
+                continue;
+            }
+            
+            if ($changed[$field] === $entity->{$field}['name']) {
+                continue;
+            }
+            
+            $path = $this->getPath($field, $settings);
+            $storage = $this->_getStorage($entity, $path, $field, $settings);
+            if (is_string($changed[$field])) {
+                $tmpData[] = $changed[$field];
+                $changed[$field] = $tmpData;
+            }
+            
+            $storage->delete($changed[$field]);
+        }
+    }
+    
+    /**
      * Remove related files after Entity has been deleted.
      * 
      * @param Event $event
