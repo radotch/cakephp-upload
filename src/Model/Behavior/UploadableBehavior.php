@@ -2,6 +2,7 @@
 namespace CakeUpload\Model\Behavior;
 
 use CakeUpload\Data\DataManager\DataManagerInterface;
+use CakeUpload\Storage\StorageInterface;
 use Cake\ORM\Behavior;
 use Cake\ORM\Table;
 use Cake\ORM\Entity;
@@ -12,6 +13,7 @@ use CakeUpload\Database\Type\UploadedFileType;
 use CakeUpload\Data\Error\UploadChecker;
 use CakeUpload\Data\Path\PathManager;
 use CakeUpload\Data\DataManager\DataManager;
+use CakeUpload\Storage\LocalStorage;
 use ArrayObject;
 use Exception;
 
@@ -103,6 +105,9 @@ class UploadableBehavior extends Behavior
             
             $dataManager = $this->_getDataManager($entity, $uploadData, $path, $field, $settings);
             $files = $dataManager->build();
+            
+            $storage = $this->_getStorage($entity, $path, $field, $settings);
+            $storage->write($files);
         }
     }
     
@@ -165,5 +170,24 @@ class UploadableBehavior extends Behavior
         }
         
         return $dataManager;
+    }
+    
+    /**
+     * Get storage instance
+     * 
+     * @param Entity $entity Entity instance
+     * @param string $path Path relative to root or CakePHP webroot directory depending from implementation.
+     * @param string $field Field's name
+     * @param array $settings Field's settings
+     * @return StorageInterface
+     */
+    protected function _getStorage(Entity $entity, string $path, string $field, array $settings)
+    {
+        $storage = new LocalStorage($this->_table, $entity, $path, $field, $settings);
+        if (! $storage instanceof StorageInterface) {
+            throw new Exception('Storage class must implements StorageInterface.');
+        }
+        
+        return $storage;
     }
 }
